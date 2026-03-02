@@ -7,7 +7,12 @@ export default function Task({ project, deleteProject, addTask, removeTask }) {
     year: "numeric",
   }).format(new Date(project.date));
 
-  const newTask = useRef();
+  const [taskText, setTaskText] = useState("");
+
+  function handleAddClick() {
+    addTask(taskText);
+    setTaskText("");
+  }
 
   return (
     <div className="flex w-[25%]  flex-col ml-12 mt-16 bg-white rounded-2xl shadow-lg p-6">
@@ -31,10 +36,11 @@ export default function Task({ project, deleteProject, addTask, removeTask }) {
             className="flex-1 px-3 py-2 rounded-lg bg-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-400 transition"
             type="text"
             placeholder="Add a new task..."
-            ref={newTask}
+            value={taskText}
+            onChange={(e) => setTaskText(e.target.value)}
           />
           <button
-            onClick={() => addTask(newTask)}
+            onClick={handleAddClick}
             className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-stone-900 transition"
           >
             Add

@@ -5,24 +5,24 @@ import AddNewProject from "./components/AddNewProject.jsx";
 import Task from "./components/Task.jsx";
 
 function App() {
-  const [content, setContent] = useState("noProject");
   const [projects, setProjects] = useState([]);
-  const [curProject, setCurProject] = useState();
+  const [isAddingProject, setIsAddingProject] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const curProject = projects.find((p) => p.id === selectedProjectId);
 
-  function handleAddNewProject() {
-    setContent("addNewProject");
+  function handleStartAddProject() {
+    setIsAddingProject(true);
   }
 
   function handleCloseAddNewProject() {
-    setContent("noProject");
+    setIsAddingProject(false);
+    setSelectedProjectId(null);
   }
 
-  function handleSetCurProject(id) {
-    const findCurProject = projects.find((project) => project.id === id);
-    if (findCurProject) {
-      setCurProject(findCurProject);
-      setContent("curProject");
-    }
+  function handleSetCurProjectId(id) {
+    if (!id) return;
+    setSelectedProjectId(id);
+    setIsAddingProject(false);
   }
 
   function handleSaveProject({ title, description, date }) {
@@ -34,21 +34,22 @@ function App() {
       tasks: [],
     };
 
-    setProjects((prevProject) => [...prevProject, newProject]);
-    setCurProject(newProject);
-    setContent("curProject");
+    setProjects((prevProjects) => [...prevProjects, newProject]);
+    setSelectedProjectId(newProject.id);
+    setIsAddingProject(false);
   }
 
   function handleDeleteProject(id) {
-    setProjects((prevProject) => prevProject.filter((project) => project.id !== id));
-    handleCloseAddNewProject();
+    setProjects((prevProjects) => prevProjects.filter((project) => project.id !== id));
+    setSelectedProjectId(null);
   }
 
-  function handleAddTask(newTask) {
-    if (!newTask.current.value.trim()) return;
+  function handleAddTask(taskText) {
+    console.log(taskText)
+    if (!taskText.trim()) return;
     const task = {
       id: Date.now(),
-      task: newTask.current.value.trim(),
+      task: taskText.trim(),
     };
 
     setProjects((prevProjects) =>
@@ -56,13 +57,6 @@ function App() {
         proj.id === curProject.id ? { ...proj, tasks: [...proj.tasks, task] } : proj,
       ),
     );
-
-    setCurProject((prevProject) => ({
-      ...prevProject,
-      tasks: [...prevProject.tasks, task],
-    }));
-
-    newTask.current.value = "";
   }
 
   function handleRemoveTask(id) {
@@ -73,40 +67,33 @@ function App() {
           : proj,
       ),
     );
-
-    setCurProject((prevProject) => ({
-      ...prevProject,
-      tasks: prevProject.tasks.filter((task) => task.id !== id),
-    }));
   }
 
   return (
-    <>
-      <main className="h-screen flex">
-        <SideBar
-          projects={projects}
-          addNewProject={handleAddNewProject}
-          setCurProject={handleSetCurProject}
-        ></SideBar>
-        {content === "noProject" && (
-          <NoProjectSelected addNewProject={handleAddNewProject}></NoProjectSelected>
-        )}
-        {content === "addNewProject" && (
-          <AddNewProject
-            closeAddNewProject={handleCloseAddNewProject}
-            saveProject={handleSaveProject}
-          />
-        )}
-        {content === "curProject" && curProject && (
-          <Task
-            project={curProject}
-            deleteProject={handleDeleteProject}
-            addTask={handleAddTask}
-            removeTask={handleRemoveTask}
-          />
-        )}
-      </main>
-    </>
+    <main className="h-screen flex">
+      <SideBar
+        projects={projects}
+        addNewProject={handleStartAddProject}
+        setCurProject={handleSetCurProjectId}
+      />
+      {!curProject && !isAddingProject && (
+        <NoProjectSelected addNewProject={handleStartAddProject} />
+      )}
+      {isAddingProject && (
+        <AddNewProject
+          closeAddNewProject={handleCloseAddNewProject}
+          saveProject={handleSaveProject}
+        />
+      )}
+      {curProject && !isAddingProject && (
+        <Task
+          project={curProject}
+          deleteProject={handleDeleteProject}
+          addTask={handleAddTask}
+          removeTask={handleRemoveTask}
+        />
+      )}
+    </main>
   );
 }
 
