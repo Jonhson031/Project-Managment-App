@@ -45,7 +45,6 @@ function App() {
   }
 
   function handleAddTask(taskText) {
-    console.log(taskText)
     if (!taskText.trim()) return;
     const task = {
       id: Date.now(),
